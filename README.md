@@ -3,6 +3,8 @@ Winning solution for the Rakuten Data Challenge, as part of SIGIR eCom '18.
 
 The details of the model choices and evolution can be found in the [system description paper](https://sigir-ecom.github.io/ecom18DCPapers/ecom18DC_paper_9.pdf) for that workshop.
 
+Apart from download this repository, you also need to download "kerosene" repository from this link \footnote{\url{https://github.com/mcskinner/kerosene/tree/66bc8b12178c7826cc5f5a09a3e7886df0b2d8a2}}, and move subfolder "./kerosene" into "ecom-rakuten" folder.
+
 ## Usage
 
 ### Data Preparation
