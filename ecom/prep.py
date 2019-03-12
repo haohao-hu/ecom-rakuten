@@ -25,7 +25,7 @@ def category_encoder(cats):
     return vocab.CategoryEncoder(itos, vocab.mk_stoi(itos), freq)
 
 
-def validation_set(all_train):
+def validation_set(all_train, whole_set=False):
     freq = all_train.groupby('cat', as_index=False).count()
     singletons = freq[freq.item == 1].cat
     single_train = all_train[all_train.cat.isin(singletons)]
@@ -38,11 +38,13 @@ def validation_set(all_train):
         stratify=multi_train['cat'],
     )
     train = pd.concat([most_train, single_train])
+    if whole_set:
+        train=pd.concat([train, val])
     return train, val
 
 
-def main():
-    train, val = validation_set(data.load_all_train())
+def main(whole_set=False):
+    train, val = validation_set(data.load_all_train(),whole_set)
     data.save_train_val(train, val)
 
     enc = char_encoder(train.item)

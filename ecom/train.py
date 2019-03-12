@@ -25,15 +25,24 @@ def train(
     mom_lo=0.85,
     n_emb=50,
     n_hid=512,
+    bs=256,
+    fine_tune=True,
 ):
     enc, cenc = data.load_encoders()
-    trn_dl, val_dl = data.load_dataloaders(reverse=reverse)
+    trn_dl, val_dl = data.load_dataloaders(reverse=reverse,bs=bs)
 
     n_inp = len(enc.itos)
     n_out = len(cenc.itos)
-    model = torch_util.to_gpu(bpv.BalancedPoolLSTM(n_inp, n_emb, n_hid, n_out))
+    if fine_tune:
+        model = data.load_model(
+                torch_util.to_gpu(bpv.BalancedPoolLSTM(n_inp, n_emb, n_hid, n_out)),
+                model_name,
+            )
+        n_batches = n_epochs * len(val_dl)
+    else:
+        model = torch_util.to_gpu(bpv.BalancedPoolLSTM(n_inp, n_emb, n_hid, n_out))
 
-    n_batches = n_epochs * len(trn_dl)
+        n_batches = n_epochs * len(trn_dl)
     optim = optimizer.make(torch.optim.SGD, model, lr)
     schedule = sched.one_cycle(optim, n_batches, lr_factor=lr_factor, momentums=(mom_hi, mom_lo))
     mgr = batches.Manager(
@@ -44,8 +53,14 @@ def train(
         metrics=[accuracy],
         seq_first=True,
     )
-    print(loop.fit(mgr, trn_dl, val_dl, n_epochs))
-    data.save_model(model, model_name)
+    if fine_tune:
+        print(loop.fit(mgr, val_dl, val_dl, n_epochs))
+    else:
+        print(loop.fit(mgr, trn_dl, val_dl, n_epochs))
+    if fine_tune:
+        data.save_model(model, model_name+'_fine_tune_e'+str(n_epochs)+'_lr'+str(lr)+'_bs'+str(bs))
+    else:
+        data.save_model(model, model_name)
 
 
 if __name__ == '__main__':

@@ -18,6 +18,7 @@ Move the challenge files into the `data/` subdirectory:
 ```
 mv path/to/rdc-catalog-train.tsv data/
 mv path/to/rdc-catalog-test.tsv data/
+mv path/to/rdc-catalog-gold.tsv data/
 ```
 
 Run a train/test split, build the vocabularies, and save the int-encoded training and validation sets for later:

@@ -9,6 +9,7 @@ import pathlib
 import pickle
 import torch
 import torch.utils.data
+#import codecs
 
 DATA_PATH = pathlib.Path('data')
 MODEL_PATH = pathlib.Path('data/models')
@@ -38,6 +39,9 @@ def save_train_val(train, val):
     train.to_csv(DATA_PATH/'train.csv', index=False)
     val.to_csv(DATA_PATH/'val.csv', index=False)
 
+def save_train_val_as_rdc_tsv(train, val):
+    train.to_csv(DATA_PATH/'train.tsv', index=False,header=False,sep='\t')
+    val.to_csv(DATA_PATH/'val.tsv', index=False,header=False,sep='\t')
 
 def load_train_val():
     train = pd.read_csv(DATA_PATH/'train.csv')
@@ -99,12 +103,14 @@ def load_dataloaders(reverse=False, bs=256):
 
 
 def load_test_ds(reverse=False):
-    enc, _ = load_encoders()
-    test = pd.read_csv(DATA_PATH/'rdc-catalog-test.tsv', sep='\t', header=None, names=('item',))
+    enc, cenc = load_encoders()
+    test = pd.read_csv(DATA_PATH/'rdc-catalog-gold.tsv', sep='\t', header=None, names=('item','cat'))
     test_enc = enc.encode(test.item)
+    test_cat_enc=cenc.encode(test.cat)
     if reverse:
         test_enc = _reverse_all(test_enc)
-    return RakDataset(test_enc, np.zeros(test_enc.shape[0]))
+    #return RakDataset(test_enc, np.zeros(test_enc.shape[0]))
+    return RakDataset(test_enc,test_cat_enc)
 
 
 def load_test_dataloader(reverse=False, bs=256):
@@ -119,7 +125,7 @@ def load_test_dataloader(reverse=False, bs=256):
 
 def save_test_pred(cenc, pred, tune_f1=False):
     test_cats = cenc.decode(pred)
-    with open(DATA_PATH/'rdc-catalog-test.tsv') as tf:
+    with open(DATA_PATH/'rdc-catalog-test.tsv', encoding="utf-8") as tf:
         test_items = [l.strip('\n') for l in tf.readlines()]
     test_df = pd.DataFrame(collections.OrderedDict(item=test_items, cat=test_cats))
     path = DATA_PATH/'test-pred{}.tsv'.format('' if tune_f1 else '-notune')
