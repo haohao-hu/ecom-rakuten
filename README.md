@@ -91,3 +91,8 @@ To run test set inference and output prediction files for a single model, with e
 ```
 ./infer.sh model-name --is-test
 ```
+
+Lambda (i) in the ensemble of KNN and LSTM-BPV(s) can be set like this:
+```
+./infer.sh --forward=model-name --reverse=reverse-model --i=0.6
+```
